@@ -1,0 +1,14 @@
+[project]
+name = "supersight_api"
+version = "0.1.0"
+description = "Supersight REST API"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi[standard]>=0.124.0",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.14.8",
+]
