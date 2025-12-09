@@ -1,0 +1,39 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+logs/
+*.egg-info
+
+### VS Code ###
+.DS_Store
+.vscode/
+!.vscode/extensions.json
+
+# Virtual environments
+.venv
+
+# Envars
+.env
+
+# Storage
+.tmp/
+
+# Logs
+.logs/
+api/logs/
+dashboard/logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+### Node ###
+node_modules/
+dist
+dist-ssr
+*.local
