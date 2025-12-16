@@ -20,6 +20,7 @@ logs/
 
 # Storage
 .tmp/
+.ruff_cache
 
 # Logs
 .logs/

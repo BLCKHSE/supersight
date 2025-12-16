@@ -1,7 +1,6 @@
-'''Healthcheck module'''
+'''Health module'''
 
 from fastapi import APIRouter, status
-
 
 healthRouter: APIRouter = APIRouter()
 
