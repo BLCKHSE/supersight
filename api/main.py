@@ -3,8 +3,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from log import logger  # noqa: F401
-
+from middleware.logger import RequestResponseLogger
 from controllers import (
     accountsRouter,
     healthRouter,
@@ -26,7 +25,7 @@ app.add_middleware(
     allow_methods=['*'],
     allow_headers=['*'],
 )
-
+app.add_middleware(RequestResponseLogger)
 
 @app.exception_handler(RequestValidationError)
 async def handle_validation_exception(request: Request, ex: RequestValidationError):
