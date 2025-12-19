@@ -3,17 +3,21 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from middleware.logger import RequestResponseLogger
 from controllers import (
     accountsRouter,
+    ecommRouter,
     healthRouter,
 )
+from middleware.logger import RequestResponseLogger
+from utils.exceptions import InvalidInputException
+
 
 def main() -> FastAPI:
     app: FastAPI = FastAPI()
 
     app.include_router(prefix='/api/health', router=healthRouter)
     app.include_router(prefix='/api/accounts', router=accountsRouter)
+    app.include_router(prefix='/api/ecommerce', router=ecommRouter)
 
     return app
 
@@ -34,3 +38,7 @@ async def handle_validation_exception(request: Request, ex: RequestValidationErr
         for err in ex._errors
     }
     return JSONResponse(status_code=400, content=errors)
+
+@app.exception_handler(InvalidInputException)
+async def handle_invalid_input_exception(request: Request, ex: InvalidInputException):
+    return JSONResponse(status_code=400, content={ex.field: ex.message})
