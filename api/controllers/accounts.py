@@ -2,11 +2,12 @@
 
 from typing import Annotated, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.exceptions import RequestValidationError
 
 from models.accounts import UserAccount
 from services.accounts import AccountService
 from schemas.accounts import AccountCreate
+from utils.exceptions import InvalidInputException
+
 
 accountsRouter: APIRouter = APIRouter()
 
@@ -18,7 +19,7 @@ async def register(
     userAccount: Optional[UserAccount] = await account_service.get_by_email(account.email)
 
     if userAccount:
-        raise RequestValidationError([{'loc': ['body', 'email'], 'msg': 'user with specified email already exists'}])
+        raise InvalidInputException('email', 'already in use')
     
     userAccount, errors = await account_service.create(account)
     if userAccount:
