@@ -1,9 +1,9 @@
-from typing import Annotated
+from typing import Annotated, Optional
 from fastapi import APIRouter, Depends
 
-from models.ecommerce import EcommercePlatform
-from schemas.ecommerce import PlatformCreate
-from services.ecommerce import PlatformService
+from models.ecommerce import EcommercePlatform, EcommercePlatformSignature
+from schemas.ecommerce import PlatformCreate, PlatformSignatureCreate
+from services.ecommerce import PlatformService, PlatformSignatureService
 from utils.exceptions import InvalidInputException
 
 
@@ -28,3 +28,30 @@ async def get_list(
 ):
     platforms: list[EcommercePlatform] = await platform_service.get_list()
     return platforms
+
+
+@ecommRouter.post(path='/platforms/{platform_id}/signatures', response_model=list[EcommercePlatformSignature])
+async def add_or_update_signatures(
+    signatures: list[PlatformSignatureCreate],
+    platform_id: str,
+    platform_service: Annotated[PlatformService, Depends()],
+    platform_signature_service: Annotated[PlatformSignatureService, Depends()],
+):
+    platform: Optional[EcommercePlatform] = await platform_service.get_by_id(platform_id)
+    if platform is None:
+        raise InvalidInputException('platform_id', 'not found')
+    
+    platform_signatures, errors = await platform_signature_service.create(platform_id, signatures)
+
+    if errors:
+        raise InvalidInputException(errors['general'])
+    
+    return platform_signatures
+
+
+@ecommRouter.get(path='/platforms/{platform_id}/signatures', response_model=list[EcommercePlatformSignature])
+async def get_signatures(
+    platform_id: str,
+    platform_signature_service: Annotated[PlatformSignatureService, Depends()],
+) -> list[EcommercePlatformSignature]:
+    return await platform_signature_service.get_by_platform(platform_id)

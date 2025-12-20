@@ -34,7 +34,7 @@ app.add_middleware(RequestResponseLogger)
 @app.exception_handler(RequestValidationError)
 async def handle_validation_exception(request: Request, ex: RequestValidationError):
     errors: dict[str, str] = {
-        '.'.join(err['loc'][1:]) : err['msg']
+        '.'.join(err['loc'][2:]) : err['msg']
         for err in ex._errors
     }
     return JSONResponse(status_code=400, content=errors)

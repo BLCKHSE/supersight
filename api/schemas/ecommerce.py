@@ -3,6 +3,8 @@ from typing import Optional
 from pydantic import BaseModel, field_validator
 from sqlmodel import Field
 
+from utils.enums import FingerprintType
+
 
 class PlatformCreate(BaseModel):
 
@@ -20,3 +22,10 @@ class PlatformCreate(BaseModel):
             raise ValueError(
                 'must be a valid url'
             )
+
+
+class PlatformSignatureCreate(BaseModel):
+
+    confidence: int = Field(ge=10, le=100)
+    type: FingerprintType = Field(nullable=False)
+    values: list[str] = Field(min_length=1, max_length=10, nullable=False)

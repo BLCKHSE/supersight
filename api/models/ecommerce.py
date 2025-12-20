@@ -1,7 +1,7 @@
 from typing import Optional
 from sqlmodel import ARRAY, Column, Enum, Field, Integer, Relationship, SQLModel, String
 
-from schemas.ecommerce import PlatformCreate
+from schemas.ecommerce import PlatformCreate, PlatformSignatureCreate
 from utils.enums import FingerprintType
 from utils.helpers import GeneralHelper
 
@@ -38,4 +38,12 @@ class EcommercePlatformSignature(SQLModel, table=True):
     platform_id: str = Field(foreign_key='ecommerce_platforms.id', nullable=False, ondelete='CASCADE')
 
     platform: EcommercePlatform = Relationship(back_populates='signatures')
+
+
+    def __init__(self, signature: PlatformSignatureCreate, platform_id: str):
+
+        self.type = signature.type
+        self.confidence = signature.confidence
+        self.platform_id = platform_id
+        self.values = signature.values
 
