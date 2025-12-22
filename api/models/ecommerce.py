@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Optional
-from sqlmodel import ARRAY, TIMESTAMP, Column, Enum, Field, Integer, Relationship, SQLModel, String
+from sqlmodel import ARRAY, TIMESTAMP, Column, Enum, Field, Integer, Relationship, SQLModel, String, UniqueConstraint
 
 from schemas.ecommerce import PlatformCreate, PlatformSignatureCreate, StoreCreate
 from utils.enums import FingerprintType, MarketType, StoreType
@@ -29,6 +29,9 @@ class EcommercePlatform(SQLModel, table=True):
 class EcommercePlatformSignature(SQLModel, table=True):
 
     __tablename__ = 'ecommerce_platform_signatures' # type: ignore
+    __table_args__ = (
+        UniqueConstraint("type", "platform_id", name="type_platform_id_constraint"),
+    )
 
     confidence: int = Field(sa_column=Column(Integer, default=10), le=100, ge=10)
     id: str = Field(sa_column=Column(

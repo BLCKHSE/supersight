@@ -31,13 +31,15 @@ app.add_middleware(
 )
 app.add_middleware(RequestResponseLogger)
 
+
 @app.exception_handler(RequestValidationError)
 async def handle_validation_exception(request: Request, ex: RequestValidationError):
     errors: dict[str, str] = {
-        '.'.join(err['loc'][(2 if len(err['loc']) > 2 else 1):]) : err['msg']
+        '.'.join([str(er) for er in err['loc'][1:]]) : err['msg']
         for err in ex._errors
     }
     return JSONResponse(status_code=400, content=errors)
+
 
 @app.exception_handler(InvalidInputException)
 async def handle_invalid_input_exception(request: Request, ex: InvalidInputException):
