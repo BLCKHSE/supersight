@@ -1,10 +1,11 @@
 from functools import reduce
 from typing import Optional
-from sqlmodel import func, select
+from sqlmodel import func, or_, select
 
-from models.ecommerce import EcommercePlatform, EcommercePlatformSignature
+from dtos.ecommerce import StoreParamsDTO
+from models.ecommerce import EcommercePlatform, EcommercePlatformSignature, EcommerceStore
 from models._database import SessionDep
-from schemas.ecommerce import PlatformCreate, PlatformSignatureCreate
+from schemas.ecommerce import PlatformCreate, PlatformSignatureCreate, StoreCreate
 from utils.exceptions import InvalidInputException
 from utils.enums import FingerprintType
 
@@ -99,4 +100,69 @@ class PlatformSignatureService:
                 EcommercePlatformSignature.type == type,
             )
         )
+
+
+class StoreService:
+
+    def __init__(self, session: SessionDep) -> None:
+        self._session = session
+        self._platform_service = PlatformService(session)
+
+    async def _check_exists(self, name: str, domain_name: str) -> list[str]:
+        invalid_fields: list[str] = []
+        stores: list[EcommerceStore] =  list(self._session.scalars(
+            select(EcommerceStore)
+                .where(or_(
+                    func.lower(EcommerceStore.name) == name.lower(),
+                    func.lower(EcommerceStore.domain_name) == domain_name.lower(),
+                ))
+        ).all())
+
+        for store in stores:
+            if store.name.lower() == name.lower():
+                invalid_fields.append('name')
+            elif store.domain_name.lower() == domain_name.lower():
+                invalid_fields.append('domainName')
+
+        return invalid_fields
     
+    async def create(
+        self, storeCreate: StoreCreate
+    ) -> tuple[Optional[EcommerceStore], dict[str, str]]:
+        
+        store: Optional[EcommerceStore] = None
+        errors: dict[str, str] = {}
+        if storeCreate.platform_id:
+            platform: Optional[EcommercePlatform] = await self._platform_service.get_by_id(storeCreate.platform_id)
+            if platform is None:
+                raise InvalidInputException('platform_id', 'not found')
+        
+        invalid_fields = await self._check_exists(storeCreate.name, storeCreate.domain_name)
+        if len(invalid_fields) > 0:
+            raise InvalidInputException(invalid_fields[0], 'already in use')
+        try:
+            store = EcommerceStore(storeCreate)
+            self._session.add(store)
+            self._session.commit()
+            self._session.refresh(store)
+        except Exception as ex:
+            errors['store'] = reduce(lambda x, y: x + y,  ex.args, '')
+
+        return store, errors
+    
+    async def get_by_id(self, store_id: str) -> Optional[EcommerceStore]:
+        return self._session.get(EcommerceStore, store_id)
+    
+    async def get_list(self, params: StoreParamsDTO) -> list[EcommerceStore]:
+        stmt = select(EcommerceStore)
+        
+        if params.name:
+            stmt = stmt.where(or_(EcommerceStore.name.ilike(f'%{params.name}%'))) # type: ignore
+        if params.platform_id:
+            stmt = stmt.where(or_(EcommerceStore.platform_id == params.platform_id))
+        if params.market_type:
+            stmt = stmt.where(or_(EcommerceStore.market_type == params.market_type))
+        if params.store_type:
+            stmt = stmt.where(or_(EcommerceStore.store_type == params.store_type))
+
+        return list(self._session.exec(stmt.order_by(EcommerceStore.updated_on.desc()))) # type: ignore
