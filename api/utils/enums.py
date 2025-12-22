@@ -16,3 +16,16 @@ class FingerprintType(str, Enum):
     SCRIPT = 'script'
     IFRAME = 'iframe'
     HTML_COMMENT = 'html_comment'
+
+
+class MarketType(str, Enum):
+    
+    B2B = 'b2b'
+    B2C = 'b2c'
+    C2C = 'c2c'
+
+
+class StoreType(str, Enum):
+
+    MARKETPLACE = 'marketplace'
+    ONLINE_STORE = 'online_store'

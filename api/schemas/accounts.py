@@ -1,12 +1,12 @@
 from re import match
 from typing import Optional
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, EmailStr, Field, field_validator
 
 class AccountCreate(BaseModel):
 
     first_name: str = Field(serialization_alias='firstName', max_length=30, min_length=3)
     last_name: Optional[str] = Field(serialization_alias='lastName',default=None, max_length=30, min_length=1)
-    email: str = Field(max_length=60)
+    email: EmailStr = Field(max_length=60)
     home_ip_address: Optional[str] = Field(serialization_alias='homeIpAddress',default=None, pattern='^([0-9]{1,3}\\.?){4}$')
     password: Optional[str]
 
@@ -18,5 +18,5 @@ class AccountCreate(BaseModel):
         )
         if value and not match(password_pattern, value):
             raise ValueError(
-                'must be between 6-15 chars long and contian at least 1 capiatl char, & 1 special char($,&,=,_,-)'
+                'must be between 6-15 chars long and contain at least 1 captal char, & 1 special char($,&,=,_,-)'
             )
